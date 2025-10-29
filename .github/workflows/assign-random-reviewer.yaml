@@ -1,0 +1,150 @@
+name: Assign Random Reviewer (with issue history)
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  CANDIDATES: ${{ secrets.REVIEWER_CANDIDATES }} # "alice,bob,charlie,danielle" 같은 GitHub 로그인 ID 목록
+
+jobs:
+  pick-reviewer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq (for parsing)
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Gather linked issues via GraphQL (closing refs + connected events)
+        id: linked
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # GraphQL: closingIssuesReferences + ConnectedEvent(Development 패널 수동 링크)
+          QUERY='
+          query($owner:String!, $name:String!, $number:Int!){
+            repository(owner:$owner, name:$name){
+              pullRequest(number:$number){
+                number
+                closingIssuesReferences(first: 50){
+                  nodes { number }
+                }
+                timelineItems(itemTypes: [CONNECTED_EVENT], first: 100){
+                  nodes {
+                    ... on ConnectedEvent {
+                      subject {
+                        __typename
+                        ... on Issue { number }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }'
+          RESP=$(gh api graphql -f owner="$OWNER" -f name="$REPO" -F number="$PR_NUMBER" -f query="$QUERY")
+
+          # closingIssuesReferences
+          CLOSING=$(echo "$RESP" | jq -r '.data.repository.pullRequest.closingIssuesReferences.nodes[].number // empty')
+
+          # ConnectedEvent 에서 Issue만 추출
+          CONNECTED=$(echo "$RESP" | jq -r '.data.repository.pullRequest.timelineItems.nodes[]
+            | select(.subject.__typename=="Issue") | .subject.number // empty')
+
+          # 중복 제거하여 ISSUE_LIST로 합치기
+          ISSUE_LIST=$( (echo "$CLOSING"; echo "$CONNECTED") | awk 'NF' | sort -n | uniq | tr '\n' ' ' )
+          echo "issues=$ISSUE_LIST"
+          echo "issues=$ISSUE_LIST" >> "$GITHUB_OUTPUT"
+
+      - name: Select reviewer (exclude author, existing, and recent from linked issue comments)
+        id: select
+        env:
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          AUTHOR: ${{ github.actor }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CANDIDATES: ${{ env.CANDIDATES }}
+          ISSUES: ${{ steps.linked.outputs.issues }}
+        run: |
+          if [ -z "$CANDIDATES" ]; then
+            echo "❌ REVIEWER_CANDIDATES secret이 비었습니다."
+            exit 1
+          fi
+
+          # 1) 기본 제외 목록: PR 작성자 + 이미 요청된 리뷰어
+          EXISTING=$(jq -r '.pull_request.requested_reviewers[].login // empty' "$GITHUB_EVENT_PATH")
+
+          # 2) 연결된 이슈 코멘트에서 최근 리뷰어 추출 (접두어 기준)
+          #    형식: "🤖 auto-assign: @login for PR #123 (YYYY-MM-DD)"
+          RECENT=""
+          for i in $ISSUES; do
+            # 최근 N개만(예: 50) 훑어서 부담 줄이기
+            COMMENTS=$(gh api "repos/$OWNER/$REPO/issues/$i/comments?per_page=50")
+            HITS=$(echo "$COMMENTS" \
+              | jq -r '.[].body // ""' \
+              | grep -Eo "🤖 auto-assign: @[A-Za-z0-9-]+ " \
+              | sed -E "s/.*@([A-Za-z0-9-]+).*/\1/")
+            if [ -n "$HITS" ]; then
+              RECENT="$RECENT"$'\n'"$HITS"
+            fi
+          done
+
+          # 3) 후보에서 제외 처리
+          FILTERED=$(echo "$CANDIDATES" \
+            | tr ',' '\n' \
+            | grep -v -x "$AUTHOR" \
+            | grep -v -xF -f <(echo "$EXISTING" || true) \
+            | grep -v -xF -f <(echo "$RECENT" || true) \
+            | awk 'NF')
+
+          if [ -z "$FILTERED" ]; then
+            echo "⚠️ 남은 후보가 없어 리뷰어를 배정하지 않습니다."
+            exit 0
+          fi
+
+          SELECTED=$(echo "$FILTERED" | shuf -n1)
+          echo "SELECTED=$SELECTED" >> $GITHUB_ENV
+          echo "selected=$SELECTED" >> $GITHUB_OUTPUT
+          echo "✅ 선택된 리뷰어: $SELECTED"
+
+      - name: Request reviewer on the PR
+        if: env.SELECTED != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SELECTED: ${{ steps.select.outputs.selected }}
+        run: |
+          gh api \
+            --method POST \
+            "repos/$OWNER/$REPO/pulls/$PR_NUMBER/requested_reviewers" \
+            -f reviewers[]="$SELECTED"
+          echo "📝 리뷰어 요청 완료: @$SELECTED"
+
+      - name: Record assignment into linked issues as comments
+        if: env.SELECTED != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SELECTED: ${{ steps.select.outputs.selected }}
+          ISSUES: ${{ steps.linked.outputs.issues }}
+        run: |
+          DATE=$(date -u +"%Y-%m-%d")
+          for i in $ISSUES; do
+            BODY="🤖 auto-assign: @${SELECTED} for PR #${PR_NUMBER} (${DATE})"
+            gh api "repos/$OWNER/$REPO/issues/$i/comments" -f body="$BODY" >/dev/null
+            echo "🧾 이슈 #$i 코멘트 기록: $BODY"
+          done
