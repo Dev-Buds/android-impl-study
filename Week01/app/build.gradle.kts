@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.example.week01"
-    compileSdk = 36
+    compileSdk = libs.versions.projectCompileSdk.toInt()
 
     defaultConfig {
         applicationId = "com.example.week01"
-        minSdk = 26
-        targetSdk = 36
+        minSdk = libs.versions.projectMinSdk.toInt()
+        targetSdk = libs.versions.projectTargetSdk.toInt()
         versionCode = 1
         versionName = "1.0"
 
@@ -23,16 +23,16 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = libs.versions.jvmTarget
     }
     buildFeatures {
         compose = true
