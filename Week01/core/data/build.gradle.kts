@@ -45,10 +45,10 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.kotlin.serialization)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.okhttp.logging)
+
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
 }
