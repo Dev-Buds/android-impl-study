@@ -1,14 +1,23 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
     namespace = "com.example.data"
-    compileSdk = libs.versions.projectCompileSdk.toInt()
+    compileSdk =
+        libs.versions.projectCompileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
-        minSdk = libs.versions.projectMinSdk.toInt()
+        minSdk =
+            libs.versions.projectMinSdk
+                .get()
+                .toInt()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -28,11 +37,13 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
     kotlinOptions {
-        jvmTarget = libs.versions.jvmTarget
+        jvmTarget = libs.versions.jvmTarget.get()
     }
 }
 
 dependencies {
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

@@ -2,16 +2,27 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.kotlin.kapt)
 }
 
 android {
     namespace = "com.example.week01"
-    compileSdk = libs.versions.projectCompileSdk.toInt()
+    compileSdk =
+        libs.versions.projectCompileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
         applicationId = "com.example.week01"
-        minSdk = libs.versions.projectMinSdk.toInt()
-        targetSdk = libs.versions.projectTargetSdk.toInt()
+        minSdk =
+            libs.versions.projectMinSdk
+                .get()
+                .toInt()
+        targetSdk =
+            libs.versions.projectTargetSdk
+                .get()
+                .toInt()
         versionCode = 1
         versionName = "1.0"
 
@@ -32,7 +43,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
     kotlinOptions {
-        jvmTarget = libs.versions.jvmTarget
+        jvmTarget = libs.versions.jvmTarget.get()
     }
     buildFeatures {
         compose = true
@@ -49,6 +60,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -56,4 +68,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
+    kapt(libs.hilt.compiler)
 }
