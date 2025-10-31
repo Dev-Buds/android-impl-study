@@ -23,3 +23,4 @@ rootProject.name = "Week01"
 include(":app")
 include(":core:data")
 include(":core:domain")
+include(":core:designsystem")
