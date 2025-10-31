@@ -1,10 +1,12 @@
 package com.example.data.remote.service
 
+import com.example.data.BuildConfig
 import com.example.data.remote.model.SearchImageDocument
 import com.example.data.remote.model.SearchResponse
 import com.example.data.remote.model.SearchVClipDocument
 import retrofit2.Response
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.Query
 
 interface KakaoSearchService {
@@ -22,6 +24,7 @@ interface KakaoSearchService {
         @Query("sort") sort: String,
         @Query("page") page: Int,
         @Query("size") size: Int,
+        @Header("Authorization") apiKey: String = BuildConfig.KAKAO_API_KEY,
     ): Response<SearchResponse<SearchImageDocument>>
 
     /**
@@ -38,5 +41,6 @@ interface KakaoSearchService {
         @Query("sort") sort: String,
         @Query("page") page: Int,
         @Query("size") size: Int,
+        @Header("Authorization") apiKey: String = BuildConfig.KAKAO_API_KEY,
     ): Response<SearchResponse<SearchVClipDocument>>
 }

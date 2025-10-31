@@ -1,5 +1,6 @@
 package com.example.data.remote.model
 
+import com.example.domain.model.common.Pageable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -20,9 +21,15 @@ data class SearchResponse<T>(
         val totalCount: Int,
     )
 
-    fun <R> map(mapper: (T) -> R): SearchResponse<R> =
-        SearchResponse(
-            meta = meta,
-            documents = documents.map(mapper),
+    fun <R> map(
+        currentPage: Int,
+        mapper: (T) -> R,
+    ): Pageable<R> =
+        Pageable(
+            isEnd = meta.isEnd,
+            pageableCount = meta.pageableCount,
+            totalCount = meta.totalCount,
+            contents = documents.map(mapper),
+            page = currentPage,
         )
 }
