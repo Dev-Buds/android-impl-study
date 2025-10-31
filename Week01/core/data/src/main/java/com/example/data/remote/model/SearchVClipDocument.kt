@@ -1,6 +1,7 @@
 package com.example.data.remote.model
 
 import com.example.data.util.LocalDateTimeIsoSerializer
+import com.example.domain.model.VClipDocument
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
@@ -20,4 +21,14 @@ data class SearchVClipDocument(
     val thumbnail: String,
     @SerialName("author")
     val author: String,
-)
+) {
+    fun toDomain(): VClipDocument =
+        VClipDocument(
+            title = title,
+            url = url,
+            datetime = datetime,
+            playTime = playTime,
+            thumbnail = thumbnail,
+            author = author,
+        )
+}

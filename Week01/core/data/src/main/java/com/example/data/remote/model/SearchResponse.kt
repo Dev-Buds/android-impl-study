@@ -19,4 +19,10 @@ data class SearchResponse<T>(
         @SerialName("total_count")
         val totalCount: Int,
     )
+
+    fun <R> map(mapper: (T) -> R): SearchResponse<R> =
+        SearchResponse(
+            meta = meta,
+            documents = documents.map(mapper),
+        )
 }
