@@ -13,3 +13,7 @@ kotlin {
         jvmTarget = JvmTarget.JVM_21
     }
 }
+
+dependencies {
+    implementation(libs.javax.inject)
+}
