@@ -57,6 +57,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(project(":core:designsystem"))
     implementation(project(":feature:main"))
 
     implementation(libs.timber)

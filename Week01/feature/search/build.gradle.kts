@@ -6,11 +6,10 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.ksp)
-    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
-    namespace = "com.example.main"
+    namespace = "com.example.search"
     compileSdk =
         libs.versions.projectCompileSdk
             .get()
@@ -35,14 +34,9 @@ android {
             )
         }
     }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
-    }
-
-    buildFeatures {
-        compose = true
     }
 }
 
@@ -55,9 +49,6 @@ kotlin {
 dependencies {
     implementation(project(":core:domain"))
     implementation(project(":core:designsystem"))
-
-    implementation(project(":feature:search"))
-    implementation(project(":feature:bookmark"))
 
     dependencies {
         // AndroidX 기본
@@ -72,15 +63,8 @@ dependencies {
         implementation(libs.androidx.ui.tooling.preview)
         implementation(libs.androidx.material3)
 
-        // Navigation
-        implementation(libs.androidx.navigation.compose)
-
-        // Serialization
-        implementation(libs.kotlinx.serialization.json)
-
         // DI (Hilt)
         implementation(libs.hilt.android)
-        implementation(libs.androidx.hilt.navigation.compose)
         ksp(libs.hilt.compiler)
 
         // Logging

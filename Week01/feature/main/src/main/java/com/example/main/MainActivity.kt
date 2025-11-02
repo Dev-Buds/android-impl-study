@@ -4,11 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.Composable
+import androidx.navigation.compose.rememberNavController
+import com.example.main.navigation.MainNavHost
 import dagger.hilt.android.AndroidEntryPoint
 import example.com.designsystem.theme.WeekTheme
 
@@ -17,12 +15,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
-            WeekTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Box(modifier = Modifier.padding(innerPadding))
-                }
-            }
-        }
+        setContent { MainApp() }
+    }
+}
+
+@Composable
+private fun MainApp() {
+    WeekTheme {
+        val navController = rememberNavController()
+        MainNavHost(navController = navController)
     }
 }
