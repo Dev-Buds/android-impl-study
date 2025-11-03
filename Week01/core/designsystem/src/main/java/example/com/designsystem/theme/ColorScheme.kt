@@ -73,10 +73,11 @@ internal val WeekDarkColorScheme =
         outline = NeutralVariant50,
     )
 
-object Colors {
+object WeekColors {
     val Primary = Primary40
     val Secondary = Secondary40
     val AccentBookmark = Tertiary40
+    val container = NeutralVariant90
     val NeutralBackground = Neutral99
     val NeutralOnBackground = Neutral10
 }
