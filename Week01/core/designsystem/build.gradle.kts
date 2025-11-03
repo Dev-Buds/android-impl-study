@@ -56,6 +56,10 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.material.icons.extended)
+    implementation(libs.coil)
+    implementation(libs.coil.network)
+    implementation(libs.timber)
 
     debugImplementation(libs.androidx.ui.tooling)
 

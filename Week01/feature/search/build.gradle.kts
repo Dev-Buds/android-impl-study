@@ -62,10 +62,12 @@ dependencies {
         implementation(libs.androidx.ui.graphics)
         implementation(libs.androidx.ui.tooling.preview)
         implementation(libs.androidx.material3)
+        implementation(libs.material.icons.extended)
 
         // DI (Hilt)
         implementation(libs.hilt.android)
         ksp(libs.hilt.compiler)
+        implementation(libs.androidx.hilt.navigation.compose)
 
         // Logging
         implementation(libs.timber)
