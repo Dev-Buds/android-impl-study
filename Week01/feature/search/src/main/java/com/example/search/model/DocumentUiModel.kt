@@ -6,13 +6,15 @@ import java.time.LocalDateTime
 
 sealed interface DocumentUiModel {
     val datetime: LocalDateTime
+    val isBookmarked: Boolean
 
     data class ImageDocumentUiModel(
+        override val datetime: LocalDateTime,
+        override val isBookmarked: Boolean = false,
         val collection: String,
         val docUrl: String,
         val thumbnailUrl: String,
         val imageUrl: String,
-        override val datetime: LocalDateTime,
     ) : DocumentUiModel {
         companion object {
             fun from(document: ImageDocument) =
@@ -27,10 +29,11 @@ sealed interface DocumentUiModel {
     }
 
     data class VClipDocumentUiModel(
+        override val datetime: LocalDateTime,
+        override val isBookmarked: Boolean = false,
         val url: String,
         val thumbnail: String,
         val author: String,
-        override val datetime: LocalDateTime,
     ) : DocumentUiModel {
         companion object {
             fun from(document: VClipDocument) =

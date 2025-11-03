@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
+import androidx.compose.material.icons.rounded.Bookmark
+import androidx.compose.material.icons.rounded.BookmarkBorder
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,6 +59,7 @@ private data class SearchResultUiModel(
     val hostLabel: String,
     val datetime: LocalDateTime,
     val linkUrl: String?,
+    val isBookmarked: Boolean,
 )
 
 @Composable
@@ -88,8 +91,7 @@ private fun SearchResultBaseItem(
             modifier
                 .fillMaxWidth()
                 .heightIn(min = 100.dp, max = 120.dp),
-        colors =
-            CardDefaults.outlinedCardColors(containerColor = WeekColors.NeutralBackground),
+        colors = CardDefaults.outlinedCardColors(containerColor = WeekColors.NeutralBackground),
         elevation = CardDefaults.outlinedCardElevation(defaultElevation = 2.dp),
     ) {
         Row(
@@ -116,6 +118,7 @@ private fun SearchResultBaseItem(
                 hostLabel = uiModel.hostLabel,
                 datetime = uiModel.datetime,
                 linkUrl = uiModel.linkUrl,
+                isBookmarked = uiModel.isBookmarked,
                 modifier =
                     Modifier
                         .fillMaxHeight()
@@ -132,10 +135,10 @@ private fun DocumentInfoSection(
     hostLabel: String,
     datetime: LocalDateTime,
     linkUrl: String?,
+    isBookmarked: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val spacing = LocalWeekSpacing.current
-    val uriHandler = LocalUriHandler.current
 
     Column(
         modifier = modifier,
@@ -163,24 +166,58 @@ private fun DocumentInfoSection(
                 }
             }
 
-            if (!linkUrl.isNullOrBlank()) {
-                IconButton(
-                    onClick = { uriHandler.openUri(linkUrl) },
-                    modifier = Modifier.size(20.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-                        contentDescription = "웹으로 이동",
-                        tint = WeekColors.Secondary,
-                    )
-                }
-            }
+            SearchResultItemIcons(
+                linkUrl = linkUrl,
+                isBookmarked = isBookmarked,
+            )
         }
 
         DocumentMetaRow(
             datetime = datetime,
             hostLabel = hostLabel,
         )
+    }
+}
+
+@Composable
+private fun SearchResultItemIcons(
+    linkUrl: String?,
+    isBookmarked: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val spacing = LocalWeekSpacing.current
+    val uriHandler = LocalUriHandler.current
+
+    val bookmarkIcon = if (isBookmarked) Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder
+
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(spacing.small),
+    ) {
+        if (!linkUrl.isNullOrBlank()) {
+            IconButton(
+                onClick = { uriHandler.openUri(linkUrl) },
+                modifier = Modifier.size(20.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
+                    contentDescription = "웹으로 이동",
+                    tint = WeekColors.Secondary,
+                )
+            }
+        }
+
+        IconButton(
+            onClick = { },
+            modifier = Modifier.size(20.dp),
+        ) {
+            Icon(
+                imageVector = bookmarkIcon,
+                contentDescription = "북마크",
+                tint = WeekColors.Secondary,
+            )
+        }
     }
 }
 
@@ -235,7 +272,8 @@ private fun TypeChip(
                 .background(
                     color.copy(alpha = 0.15f),
                     shape = RoundedCornerShape(999.dp),
-                ).padding(
+                )
+                .padding(
                     horizontal = spacing.small,
                     vertical = spacing.extraSmall,
                 ),
@@ -250,6 +288,7 @@ private fun DocumentUiModel.ImageDocumentUiModel.toUiModel(): SearchResultUiMode
         hostLabel = docUrl.toHost(),
         datetime = datetime,
         linkUrl = docUrl,
+        isBookmarked = isBookmarked,
     )
 
 private fun DocumentUiModel.VClipDocumentUiModel.toUiModel(): SearchResultUiModel =
@@ -260,6 +299,7 @@ private fun DocumentUiModel.VClipDocumentUiModel.toUiModel(): SearchResultUiMode
         hostLabel = url.toHost(),
         datetime = datetime,
         linkUrl = url,
+        isBookmarked = isBookmarked,
     )
 
 private fun String.toCollectionLabel(): String = collectionLabelMap[lowercase()] ?: "기타"
