@@ -27,6 +27,8 @@ kotlinSerialization = "1.9.0"
 retrofitKotlinSerialization = "1.0.0"
 timber = "5.0.1"
 coil = "3.3.0"
+room = "2.8.3"
+kotlinxCoroutines = "1.10.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -48,6 +50,9 @@ material-icons-extended = { group = "androidx.compose.material", name = "materia
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "composeNavigation" }
 coil = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 coil-network = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil"}
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
@@ -58,6 +63,7 @@ okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor",
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerialization" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 javax-inject = { group = "javax.inject", name = "javax.inject", version.ref = "javaxInject" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
