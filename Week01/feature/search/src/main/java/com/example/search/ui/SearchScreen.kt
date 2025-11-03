@@ -24,7 +24,6 @@ import example.com.designsystem.component.WeekSearchBar
 import example.com.designsystem.theme.LocalWeekSpacing
 import example.com.designsystem.theme.WeekColors
 import example.com.designsystem.theme.WeekTheme
-import timber.log.Timber
 
 @Composable
 fun SearchScreen(
@@ -36,7 +35,6 @@ fun SearchScreen(
 
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
-            Timber.d("event: $event")
             when (event) {
                 is SearchUiEvent.ResetListState -> listState.scrollToItem(0)
             }
