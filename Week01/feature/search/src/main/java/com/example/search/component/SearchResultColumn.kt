@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,7 +46,7 @@ fun SearchResultColumn(
         verticalArrangement = Arrangement.spacedBy(localSpacing.medium),
     ) {
         item { Spacer(modifier = Modifier.height(localSpacing.small)) }
-        items(items.size) { SearchResultItem(item = items[it], modifier = Modifier.animateItem()) }
+        items(items = items, key = { it.hashCode() }) { item -> SearchResultItem(item = item) }
         item { Spacer(modifier = Modifier.height(localSpacing.small)) }
     }
 }
@@ -60,6 +61,8 @@ private fun SearchResultColumnPreview() {
             items =
                 List(5) {
                     DocumentUiModel.ImageDocumentUiModel(
+                        collection = "",
+                        docUrl = "",
                         thumbnailUrl = "",
                         imageUrl = "",
                         datetime = LocalDateTime.now(),
