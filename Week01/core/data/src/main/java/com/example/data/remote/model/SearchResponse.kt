@@ -22,10 +22,12 @@ data class SearchResponse<T>(
     )
 
     fun <R> map(
+        query: String,
         currentPage: Int,
         mapper: (T) -> R,
     ): Pageable<R> =
         Pageable(
+            query = query,
             isEnd = meta.isEnd,
             pageableCount = meta.pageableCount,
             totalCount = meta.totalCount,
