@@ -12,9 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -36,19 +33,37 @@ fun SearchScreen(
     LaunchedEffect(Unit) {
         viewModel.uiEvent.collect { event ->
             when (event) {
-                is SearchUiEvent.ResetListState -> listState.scrollToItem(0)
+                SearchUiEvent.ResetListState -> listState.scrollToItem(0)
             }
         }
     }
 
+    SearchScreen(
+        uiState = uiState,
+        listState = listState,
+        onQueryChange = viewModel::updateQuery,
+        onSearch = viewModel::search,
+        onClickStorage = navigateToBookmark,
+    )
+}
+
+@Composable
+private fun SearchScreen(
+    uiState: SearchUiState,
+    listState: LazyListState,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    onClickStorage: () -> Unit,
+) {
     Scaffold(
-        topBar = { SearchTopAppBar(onClickStorage = navigateToBookmark) },
+        topBar = { SearchTopAppBar(onClickStorage = onClickStorage) },
         containerColor = WeekColors.NeutralBackground,
     ) { innerPadding ->
         SearchScreenContent(
             uiState = uiState,
             listState = listState,
-            onSearch = viewModel::search,
+            onQueryChange = onQueryChange,
+            onSearch = onSearch,
             modifier = Modifier.padding(innerPadding),
         )
     }
@@ -58,11 +73,11 @@ fun SearchScreen(
 private fun SearchScreenContent(
     uiState: SearchUiState,
     listState: LazyListState,
-    onSearch: (String) -> Unit,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val localSpacing = LocalWeekSpacing.current
-    var query by rememberSaveable { mutableStateOf("") }
 
     Column(
         modifier =
@@ -71,9 +86,9 @@ private fun SearchScreenContent(
                 .padding(horizontal = localSpacing.large),
     ) {
         WeekSearchBar(
-            query = query,
-            onQueryChange = { new -> query = new },
-            onSearch = { onSearch(query) },
+            query = uiState.query,
+            onQueryChange = onQueryChange,
+            onSearch = onSearch,
         )
 
         Spacer(modifier = Modifier.height(localSpacing.medium))
@@ -81,7 +96,7 @@ private fun SearchScreenContent(
         SearchResultColumn(
             items = uiState.items,
             state = listState,
-            onScrolledToEnd = { onSearch(query) },
+            onScrolledToEnd = onSearch,
         )
     }
 }
@@ -90,6 +105,12 @@ private fun SearchScreenContent(
 @Composable
 private fun SearchScreenPreview() {
     WeekTheme {
-        SearchScreen(navigateToBookmark = {})
+        SearchScreen(
+            uiState = SearchUiState(),
+            listState = rememberLazyListState(),
+            onQueryChange = {},
+            onSearch = {},
+            onClickStorage = {},
+        )
     }
 }

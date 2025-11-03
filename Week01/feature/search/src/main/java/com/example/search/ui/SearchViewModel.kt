@@ -1,6 +1,5 @@
 package com.example.search.ui
 
-import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.domain.model.ImageDocument
@@ -35,7 +34,13 @@ class SearchViewModel @Inject constructor(
     private val _uiEvent: Channel<SearchUiEvent> = Channel()
     val uiEvent: Flow<SearchUiEvent> = _uiEvent.receiveAsFlow()
 
-    fun search(query: String) {
+    fun updateQuery(newQuery: String) {
+        if (_uiState.value.query == newQuery) return
+        _uiState.value = _uiState.value.copy(query = newQuery)
+    }
+
+    fun search() {
+        val query = _uiState.value.query
         if (query.isBlank()) {
             _uiState.value = _uiState.value.copy(items = emptyList())
             imagePageable = Pageable()
@@ -78,13 +83,4 @@ class SearchViewModel @Inject constructor(
             }.onFailure { exception -> Timber.e(exception.message, exception) }
             .getOrNull() ?: vClipPageable
     }
-}
-
-@Immutable
-data class SearchUiState(
-    val items: List<DocumentUiModel> = emptyList(),
-)
-
-sealed interface SearchUiEvent {
-    data object ResetListState : SearchUiEvent
 }
