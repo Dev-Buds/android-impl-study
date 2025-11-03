@@ -22,7 +22,7 @@ class KakaoSearchRepository @Inject constructor(
                 sort = sort,
                 page = page,
                 size = size,
-            ).mapCatching { response -> response.map(page) { item -> item.toDomain() } }
+            ).mapCatching { response -> response.map(query, page) { item -> item.toDomain() } }
 
     override suspend fun searchVClip(
         query: String,
@@ -36,5 +36,5 @@ class KakaoSearchRepository @Inject constructor(
                 sort = sort,
                 page = page,
                 size = size,
-            ).mapCatching { response -> response.map(page) { item -> item.toDomain() } }
+            ).mapCatching { response -> response.map(query, page) { item -> item.toDomain() } }
 }
