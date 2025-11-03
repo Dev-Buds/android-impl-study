@@ -1,13 +1,15 @@
 package com.example.domain.model.common
 
 data class Pageable<T>(
-    val contents: List<T>,
-    val isEnd: Boolean,
-    val pageableCount: Int,
-    val totalCount: Int,
-    val page: Int,
+    val query: String = "",
+    val contents: List<T> = emptyList(),
+    val isEnd: Boolean = false,
+    val pageableCount: Int = 0,
+    val totalCount: Int = 0,
+    val page: Int = 0,
 ) {
-    fun nextPage(): Pageable<T>? {
+    fun nextPage(query: String): Pageable<T>? {
+        if (this.query != query) return Pageable(query = query)
         if (isEnd) return null
         return copy(page = page + 1)
     }

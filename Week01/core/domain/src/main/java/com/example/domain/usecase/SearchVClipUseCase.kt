@@ -9,9 +9,15 @@ class SearchVClipUseCase @Inject constructor(
     private val repository: SearchRepository,
 ) {
     suspend operator fun invoke(
-        query: String,
-        page: Int,
+        pageable: Pageable<VClipDocument>,
         sort: String = "recency",
         size: Int = 15,
-    ): Result<Pageable<VClipDocument>> = repository.searchVClip(query, sort, page, size)
+    ): Result<Pageable<VClipDocument>> =
+        repository
+            .searchVClip(
+                query = pageable.query,
+                sort = sort,
+                page = pageable.page + if (pageable.page == 0) +1 else 0,
+                size = size,
+            ).mapCatching { newPageable -> pageable.merge(newPageable) }
 }
