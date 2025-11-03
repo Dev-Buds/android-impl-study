@@ -4,15 +4,27 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.search.model.DocumentUiModel
@@ -22,141 +34,266 @@ import example.com.designsystem.theme.WeekColors
 import example.com.designsystem.theme.WeekShapes
 import example.com.designsystem.theme.WeekTheme
 import example.com.designsystem.theme.WeekTypography
+import java.net.URI
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+private val ResultDateTimeFormatter: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("yyyy.MM.dd · HH:mm")
+
+private enum class DocumentType { Image, Video }
+
+private val collectionLabelMap: Map<String, String> =
+    mapOf(
+        "blog" to "블로그",
+        "cafe" to "카페",
+        "news" to "뉴스",
+    )
+
+private data class SearchResultUiModel(
+    val type: DocumentType,
+    val thumbnailUrl: String,
+    val primaryLabel: String,
+    val hostLabel: String,
+    val datetime: LocalDateTime,
+    val linkUrl: String?,
+)
 
 @Composable
 fun SearchResultItem(
     item: DocumentUiModel,
     modifier: Modifier = Modifier,
 ) {
-    when (item) {
-        is DocumentUiModel.ImageDocumentUiModel ->
-            ImageDocumentItem(item = item, modifier = modifier)
+    val uiModel =
+        when (item) {
+            is DocumentUiModel.ImageDocumentUiModel -> item.toUiModel()
+            is DocumentUiModel.VClipDocumentUiModel -> item.toUiModel()
+        }
 
-        is DocumentUiModel.VClipDocumentUiModel ->
-            VClipDocumentItem(item = item, modifier = modifier)
-    }
+    SearchResultBaseItem(
+        uiModel = uiModel,
+        modifier = modifier,
+    )
 }
 
 @Composable
-private fun ImageDocumentItem(
-    item: DocumentUiModel.ImageDocumentUiModel,
+private fun SearchResultBaseItem(
+    uiModel: SearchResultUiModel,
     modifier: Modifier = Modifier,
 ) {
-    val localSpacing = LocalWeekSpacing.current
+    val spacing = LocalWeekSpacing.current
 
     OutlinedCard(
         modifier =
             modifier
                 .fillMaxWidth()
-                .heightIn(max = 200.dp),
+                .heightIn(min = 100.dp, max = 120.dp),
         colors =
-            CardDefaults.outlinedCardColors(
-                containerColor = WeekColors.NeutralBackground,
-            ),
-        elevation =
-            CardDefaults.outlinedCardElevation(
-                defaultElevation = 2.dp,
-            ),
+            CardDefaults.outlinedCardColors(containerColor = WeekColors.NeutralBackground),
+        elevation = CardDefaults.outlinedCardElevation(defaultElevation = 2.dp),
     ) {
-        Column {
-            Text(
-                text = "이미지",
-                color = WeekColors.NeutralBackground,
-                style = WeekTypography.labelSmall,
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(spacing.medium),
+            horizontalArrangement = Arrangement.spacedBy(spacing.medium),
+        ) {
+            WeekAsyncImage(
+                url = uiModel.thumbnailUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier =
                     Modifier
-                        .padding(localSpacing.medium)
-                        .background(
-                            color = WeekColors.Primary,
-                            shape = WeekShapes.small,
-                        ).padding(localSpacing.extraSmall),
+                        .width(120.dp)
+                        .fillMaxHeight()
+                        .clip(WeekShapes.medium),
             )
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(localSpacing.small),
-                modifier = Modifier.padding(localSpacing.medium),
-            ) {
-                WeekAsyncImage(
-                    url = item.thumbnailUrl,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.weight(1f),
-                )
-
-                Text(
-                    text = item.datetime.toString(),
-                    modifier = Modifier.weight(1f),
-                )
-            }
+            DocumentInfoSection(
+                type = uiModel.type,
+                primaryLabel = uiModel.primaryLabel,
+                hostLabel = uiModel.hostLabel,
+                datetime = uiModel.datetime,
+                linkUrl = uiModel.linkUrl,
+                modifier =
+                    Modifier
+                        .fillMaxHeight()
+                        .weight(1f),
+            )
         }
     }
 }
 
 @Composable
-private fun VClipDocumentItem(
-    item: DocumentUiModel.VClipDocumentUiModel,
+private fun DocumentInfoSection(
+    type: DocumentType,
+    primaryLabel: String,
+    hostLabel: String,
+    datetime: LocalDateTime,
+    linkUrl: String?,
     modifier: Modifier = Modifier,
 ) {
-    val localSpacing = LocalWeekSpacing.current
+    val spacing = LocalWeekSpacing.current
+    val uriHandler = LocalUriHandler.current
 
-    OutlinedCard(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .heightIn(max = 200.dp),
-        colors =
-            CardDefaults.outlinedCardColors(
-                containerColor = WeekColors.NeutralBackground,
-            ),
-        elevation =
-            CardDefaults.outlinedCardElevation(
-                defaultElevation = 2.dp,
-            ),
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.SpaceBetween,
     ) {
-        Column {
-            Text(
-                text = "동영상",
-                color = WeekColors.NeutralBackground,
-                style = WeekTypography.labelSmall,
-                modifier =
-                    Modifier
-                        .padding(localSpacing.medium)
-                        .background(
-                            color = WeekColors.Primary,
-                            shape = WeekShapes.small,
-                        ).padding(localSpacing.extraSmall),
-            )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(localSpacing.small),
-                modifier = Modifier.padding(localSpacing.medium),
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(spacing.small),
             ) {
-                WeekAsyncImage(
-                    url = item.thumbnail,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.weight(1f),
-                )
+                TypeChip(type = type)
 
-                Text(
-                    text = item.datetime.toString(),
-                    modifier = Modifier.weight(1f),
-                )
+                if (primaryLabel.isNotBlank()) {
+                    Text(
+                        text = primaryLabel,
+                        style = WeekTypography.labelSmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
+
+            if (!linkUrl.isNullOrBlank()) {
+                IconButton(
+                    onClick = { uriHandler.openUri(linkUrl) },
+                    modifier = Modifier.size(20.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
+                        contentDescription = "웹으로 이동",
+                        tint = WeekColors.Secondary,
+                    )
+                }
+            }
+        }
+
+        DocumentMetaRow(
+            datetime = datetime,
+            hostLabel = hostLabel,
+        )
+    }
+}
+
+@Composable
+private fun DocumentMetaRow(
+    datetime: LocalDateTime,
+    hostLabel: String,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = datetime.format(ResultDateTimeFormatter),
+            style = WeekTypography.labelSmall,
+            color = WeekColors.Secondary,
+        )
+
+        if (hostLabel.isNotBlank()) {
+            Text(
+                text = hostLabel,
+                style = WeekTypography.labelSmall,
+                color = WeekColors.Secondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
 
-@Preview
 @Composable
-private fun SearchResultItemPreview() {
+private fun TypeChip(
+    type: DocumentType,
+    modifier: Modifier = Modifier,
+) {
+    val spacing = LocalWeekSpacing.current
+
+    val (label, color) =
+        when (type) {
+            DocumentType.Image -> "이미지" to WeekColors.Primary
+            DocumentType.Video -> "동영상" to WeekColors.Secondary
+        }
+
+    Text(
+        text = label,
+        style = WeekTypography.labelSmall,
+        color = color,
+        modifier =
+            modifier
+                .background(
+                    color.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(999.dp),
+                ).padding(
+                    horizontal = spacing.small,
+                    vertical = spacing.extraSmall,
+                ),
+    )
+}
+
+private fun DocumentUiModel.ImageDocumentUiModel.toUiModel(): SearchResultUiModel =
+    SearchResultUiModel(
+        type = DocumentType.Image,
+        thumbnailUrl = thumbnailUrl,
+        primaryLabel = collection.toCollectionLabel(),
+        hostLabel = docUrl.toHost(),
+        datetime = datetime,
+        linkUrl = docUrl,
+    )
+
+private fun DocumentUiModel.VClipDocumentUiModel.toUiModel(): SearchResultUiModel =
+    SearchResultUiModel(
+        type = DocumentType.Video,
+        thumbnailUrl = thumbnail,
+        primaryLabel = author.ifBlank { "알 수 없는 채널" },
+        hostLabel = url.toHost(),
+        datetime = datetime,
+        linkUrl = url,
+    )
+
+private fun String.toCollectionLabel(): String = collectionLabelMap[lowercase()] ?: "기타"
+
+private fun String.toHost(): String = runCatching { URI(this).host.orEmpty() }.getOrDefault("")
+
+@Preview(name = "Image Item Preview")
+@Composable
+private fun SearchResultImageItemPreview() {
     WeekTheme {
         SearchResultItem(
             item =
                 DocumentUiModel.ImageDocumentUiModel(
+                    collection = "blog",
+                    docUrl = "https://blog.naver.com/example",
                     thumbnailUrl = "",
                     imageUrl = "",
-                    datetime = LocalDateTime.of(2025, 1, 1, 1, 1),
+                    datetime = LocalDateTime.of(2025, 1, 1, 10, 30),
+                ),
+        )
+    }
+}
+
+@Preview(name = "Video Item Preview")
+@Composable
+private fun SearchResultVClipItemPreview() {
+    WeekTheme {
+        SearchResultItem(
+            item =
+                DocumentUiModel.VClipDocumentUiModel(
+                    url = "https://www.youtube.com/watch?v=abc123",
+                    thumbnail = "",
+                    author = "다이스 채널",
+                    datetime = LocalDateTime.of(2025, 2, 2, 15, 0),
                 ),
         )
     }
