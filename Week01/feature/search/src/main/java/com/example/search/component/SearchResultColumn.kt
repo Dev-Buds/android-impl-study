@@ -28,6 +28,7 @@ fun SearchResultColumn(
     items: List<DocumentUiModel>,
     state: LazyListState,
     onScrolledToEnd: () -> Unit,
+    onBookmarkClick: (item: DocumentUiModel) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val localSpacing = LocalWeekSpacing.current
@@ -46,7 +47,12 @@ fun SearchResultColumn(
         verticalArrangement = Arrangement.spacedBy(localSpacing.medium),
     ) {
         item { Spacer(modifier = Modifier.height(localSpacing.small)) }
-        items(items = items, key = { it.hashCode() }) { item -> SearchResultItem(item = item) }
+        items(items = items, key = { it.hashCode() }) { item ->
+            SearchResultItem(
+                item = item,
+                onBookmarkClick = { onBookmarkClick(item) },
+            )
+        }
         item { Spacer(modifier = Modifier.height(localSpacing.small)) }
     }
 }
@@ -58,6 +64,7 @@ private fun SearchResultColumnPreview() {
         SearchResultColumn(
             onScrolledToEnd = {},
             state = rememberLazyListState(),
+            onBookmarkClick = {},
             items =
                 List(5) {
                     DocumentUiModel.ImageDocumentUiModel(

@@ -65,6 +65,7 @@ private data class SearchResultUiModel(
 @Composable
 fun SearchResultItem(
     item: DocumentUiModel,
+    onBookmarkClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val uiModel =
@@ -76,12 +77,14 @@ fun SearchResultItem(
     SearchResultBaseItem(
         uiModel = uiModel,
         modifier = modifier,
+        onBookmarkClick = onBookmarkClick,
     )
 }
 
 @Composable
 private fun SearchResultBaseItem(
     uiModel: SearchResultUiModel,
+    onBookmarkClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val spacing = LocalWeekSpacing.current
@@ -119,6 +122,7 @@ private fun SearchResultBaseItem(
                 datetime = uiModel.datetime,
                 linkUrl = uiModel.linkUrl,
                 isBookmarked = uiModel.isBookmarked,
+                onBookmarkClick = onBookmarkClick,
                 modifier =
                     Modifier
                         .fillMaxHeight()
@@ -136,6 +140,7 @@ private fun DocumentInfoSection(
     datetime: LocalDateTime,
     linkUrl: String?,
     isBookmarked: Boolean,
+    onBookmarkClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val spacing = LocalWeekSpacing.current
@@ -169,6 +174,7 @@ private fun DocumentInfoSection(
             SearchResultItemIcons(
                 linkUrl = linkUrl,
                 isBookmarked = isBookmarked,
+                onBookmarkClick = onBookmarkClick,
             )
         }
 
@@ -183,6 +189,7 @@ private fun DocumentInfoSection(
 private fun SearchResultItemIcons(
     linkUrl: String?,
     isBookmarked: Boolean,
+    onBookmarkClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val spacing = LocalWeekSpacing.current
@@ -209,7 +216,7 @@ private fun SearchResultItemIcons(
         }
 
         IconButton(
-            onClick = { },
+            onClick = onBookmarkClick,
             modifier = Modifier.size(20.dp),
         ) {
             Icon(
@@ -272,8 +279,7 @@ private fun TypeChip(
                 .background(
                     color.copy(alpha = 0.15f),
                     shape = RoundedCornerShape(999.dp),
-                )
-                .padding(
+                ).padding(
                     horizontal = spacing.small,
                     vertical = spacing.extraSmall,
                 ),
@@ -311,6 +317,7 @@ private fun String.toHost(): String = runCatching { URI(this).host.orEmpty() }.g
 private fun SearchResultImageItemPreview() {
     WeekTheme {
         SearchResultItem(
+            onBookmarkClick = {},
             item =
                 DocumentUiModel.ImageDocumentUiModel(
                     collection = "blog",
@@ -328,6 +335,7 @@ private fun SearchResultImageItemPreview() {
 private fun SearchResultVClipItemPreview() {
     WeekTheme {
         SearchResultItem(
+            onBookmarkClick = {},
             item =
                 DocumentUiModel.VClipDocumentUiModel(
                     url = "https://www.youtube.com/watch?v=abc123",

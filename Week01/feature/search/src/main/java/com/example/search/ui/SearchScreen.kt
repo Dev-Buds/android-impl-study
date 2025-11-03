@@ -17,6 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.search.component.SearchResultColumn
 import com.example.search.component.SearchTopAppBar
+import com.example.search.model.DocumentUiModel
 import example.com.designsystem.component.WeekSearchBar
 import example.com.designsystem.theme.LocalWeekSpacing
 import example.com.designsystem.theme.WeekColors
@@ -43,6 +44,7 @@ fun SearchScreen(
         listState = listState,
         onQueryChange = viewModel::updateQuery,
         onSearch = viewModel::search,
+        onBookmarkClick = viewModel::toggleBookmark,
         onClickStorage = navigateToBookmark,
     )
 }
@@ -53,6 +55,7 @@ private fun SearchScreen(
     listState: LazyListState,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
+    onBookmarkClick: (item: DocumentUiModel) -> Unit,
     onClickStorage: () -> Unit,
 ) {
     Scaffold(
@@ -64,6 +67,7 @@ private fun SearchScreen(
             listState = listState,
             onQueryChange = onQueryChange,
             onSearch = onSearch,
+            onBookmarkClick = onBookmarkClick,
             modifier = Modifier.padding(innerPadding),
         )
     }
@@ -75,6 +79,7 @@ private fun SearchScreenContent(
     listState: LazyListState,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
+    onBookmarkClick: (item: DocumentUiModel) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val localSpacing = LocalWeekSpacing.current
@@ -97,6 +102,7 @@ private fun SearchScreenContent(
             items = uiState.items,
             state = listState,
             onScrolledToEnd = onSearch,
+            onBookmarkClick = onBookmarkClick,
         )
     }
 }
@@ -110,6 +116,7 @@ private fun SearchScreenPreview() {
             listState = rememberLazyListState(),
             onQueryChange = {},
             onSearch = {},
+            onBookmarkClick = {},
             onClickStorage = {},
         )
     }
