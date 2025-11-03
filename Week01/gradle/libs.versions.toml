@@ -24,6 +24,9 @@ retrofit2-kotlinx-serialization-converter = "1.0.0"
 # Database
 room = "2.7.2"
 
+# Paging
+paging = "3.3.1"
+
 # Ktlint
 ktlint = "13.0.0"
 
@@ -61,6 +64,10 @@ retrofit2-kotlinx-serialization-converter = { module = "com.jakewharton.retrofit
 # --- Database ---
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+
+# --- Paging ---
+androidx-paging-runtime = { module = "androidx.paging:paging-runtime", version.ref = "paging" }
+androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging" }
 
 # --- Test ---
 junit = { group = "junit", name = "junit", version.ref = "junit" }

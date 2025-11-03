@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -12,6 +14,10 @@ android {
     namespace = "com.example.week01"
     compileSdk = 36
 
+    val localProperties = gradleLocalProperties(rootDir, providers)
+
+    fun getPropertyOrThrow(key: String): String = localProperties.getProperty(key)?.trim() ?: error("$key is missing in local.properties")
+
     defaultConfig {
         applicationId = "com.example.week01"
         minSdk = 26
@@ -20,6 +26,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "KAKAO_BASE_URL", "\"${getPropertyOrThrow("KAKAO_BASE_URL")}\"")
+        buildConfigField("String", "KAKAO_API_KEY", "\"${getPropertyOrThrow("KAKAO_API_KEY")}\"")
     }
 
     buildTypes {
@@ -27,18 +36,22 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
+
     kotlinOptions {
         jvmTarget = "21"
     }
+
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 }
@@ -71,6 +84,10 @@ dependencies {
     // Database
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.runtime)
+
+    // Paging
+    implementation(libs.androidx.paging.runtime)
+    implementation(libs.androidx.paging.compose)
 
     // Test
     testImplementation(libs.junit)
