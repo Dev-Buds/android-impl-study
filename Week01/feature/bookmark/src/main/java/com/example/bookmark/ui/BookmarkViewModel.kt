@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -77,7 +78,7 @@ class BookmarkViewModel @Inject constructor(
                 val newBookmarks = currentBookmarks.filterNot { captureIds.contains(it.id) }
 
                 bookmarkCapture = updatedExisting + newBookmarks
-                _uiState.value = _uiState.value.copy(bookmarkItems = bookmarkCapture)
+                _uiState.update { uiState.value.copy(bookmarkItems = bookmarkCapture) }
             }.launchIn(viewModelScope)
     }
 }

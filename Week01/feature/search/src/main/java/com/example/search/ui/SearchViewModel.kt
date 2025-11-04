@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -48,14 +49,13 @@ class SearchViewModel @Inject constructor(
     }
 
     fun updateQuery(newQuery: String) {
-        if (_uiState.value.query == newQuery) return
-        _uiState.value = _uiState.value.copy(query = newQuery)
+        _uiState.update { _uiState.value.copy(query = newQuery) }
     }
 
     fun search() {
         val query = _uiState.value.query
         if (query.isBlank()) {
-            _uiState.value = _uiState.value.copy(items = emptyList())
+            _uiState.update { _uiState.value.copy(items = emptyList()) }
             imagePageable = Pageable()
             vClipPageable = Pageable()
             return
@@ -71,7 +71,7 @@ class SearchViewModel @Inject constructor(
                 vClipResultDeferred.await().contents.map(DocumentUiModel.VClipDocumentUiModel::from)
 
             val sorted = (imageResult + vClipResult).sortedByDescending { item -> item.datetime }
-            _uiState.emit(_uiState.value.copy(items = applyBookmarkState(sorted)))
+            _uiState.update { _uiState.value.copy(items = applyBookmarkState(sorted)) }
         }
     }
 
@@ -84,7 +84,7 @@ class SearchViewModel @Inject constructor(
             .onEach { bookmarkItems ->
                 bookmarkedIdSet = bookmarkItems.map { item -> item.id }.toSet()
                 val updated = applyBookmarkState(_uiState.value.items)
-                _uiState.value = _uiState.value.copy(items = updated)
+                _uiState.update { _uiState.value.copy(items = updated) }
             }.launchIn(viewModelScope)
     }
 
