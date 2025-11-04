@@ -119,14 +119,20 @@ class SearchViewModel @Inject constructor(
     private fun addBookmark(item: DocumentUiModel) {
         viewModelScope.launch {
             addBookmarkUseCase(item.toBookmark())
-                .onFailure { exception -> Timber.e(exception.message, exception) }
+                .onFailure { exception ->
+                    Timber.e(exception.message, exception)
+                    _uiEvent.send(SearchUiEvent.AddBookmarkFailure)
+                }
         }
     }
 
     private fun removeBookmark(id: String) {
         viewModelScope.launch {
             removeBookmarkUseCase(id)
-                .onFailure { exception -> Timber.e(exception.message, exception) }
+                .onFailure { exception ->
+                    Timber.e(exception.message, exception)
+                    _uiEvent.send(SearchUiEvent.RemoveBookmarkFailure)
+                }
         }
     }
 }

@@ -8,10 +8,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -30,11 +33,16 @@ fun SearchScreen(
 ) {
     val uiState: SearchUiState by viewModel.uiState.collectAsState()
     val listState: LazyListState = rememberLazyListState()
+    val snackbarState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
-        viewModel.uiEvent.collect { event ->
-            when (event) {
+        viewModel.uiEvent.collect { uiEvent ->
+            when (uiEvent) {
                 SearchUiEvent.ResetListState -> listState.scrollToItem(0)
+                SearchUiEvent.AddBookmarkFailure ->
+                    snackbarState.showSnackbar("북마크 추가에 실패했습니다")
+                SearchUiEvent.RemoveBookmarkFailure ->
+                    snackbarState.showSnackbar("북마크 삭제에 실패했습니다")
             }
         }
     }
@@ -42,9 +50,10 @@ fun SearchScreen(
     SearchScreen(
         uiState = uiState,
         listState = listState,
+        snackbarState = snackbarState,
         onQueryChange = viewModel::updateQuery,
         onSearch = viewModel::search,
-        onBookmarkClick = viewModel::toggleBookmark,
+        onClickBookmark = viewModel::toggleBookmark,
         onClickStorage = navigateToBookmark,
     )
 }
@@ -53,12 +62,14 @@ fun SearchScreen(
 private fun SearchScreen(
     uiState: SearchUiState,
     listState: LazyListState,
+    snackbarState: SnackbarHostState,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
-    onBookmarkClick: (item: DocumentUiModel) -> Unit,
+    onClickBookmark: (item: DocumentUiModel) -> Unit,
     onClickStorage: () -> Unit,
 ) {
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarState) },
         topBar = { SearchTopAppBar(onClickStorage = onClickStorage) },
         containerColor = WeekColors.NeutralBackground,
     ) { innerPadding ->
@@ -67,7 +78,7 @@ private fun SearchScreen(
             listState = listState,
             onQueryChange = onQueryChange,
             onSearch = onSearch,
-            onBookmarkClick = onBookmarkClick,
+            onBookmarkClick = onClickBookmark,
             modifier = Modifier.padding(innerPadding),
         )
     }
@@ -114,9 +125,10 @@ private fun SearchScreenPreview() {
         SearchScreen(
             uiState = SearchUiState(),
             listState = rememberLazyListState(),
+            snackbarState = remember { SnackbarHostState() },
             onQueryChange = {},
             onSearch = {},
-            onBookmarkClick = {},
+            onClickBookmark = {},
             onClickStorage = {},
         )
     }
