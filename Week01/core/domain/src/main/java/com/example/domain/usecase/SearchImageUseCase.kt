@@ -17,7 +17,7 @@ class SearchImageUseCase @Inject constructor(
             .searchImage(
                 query = pageable.query,
                 sort = sort,
-                page = pageable.page + if (pageable.page == 0) +1 else 0,
+                page = pageable.page + if (pageable.page == 0) 1 else 0,
                 size = size,
             ).mapCatching { newPageable -> pageable.merge(newPageable) }
 }
